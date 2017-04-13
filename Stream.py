@@ -75,9 +75,10 @@ class StreamClass (threading.Thread):
         self.stream.pprint()
         self.stream.foreachRDD(self.saveRTView1)
 
-        #arranca el flujo2 aunque el primer ciclo no se tiene en cuenta
-        #self.stream2 = StreamClass.logic(self.kvs)
-        #self.stream2.foreachRDD(self.saveRTView2)
+        #Second flow, not taken into account until 2nd loop
+        self.stream2 = StreamClass.logic(self.json_objects)
+        self.stream2.pprint()
+        self.stream2.foreachRDD(self.saveRTView2)
 
 
         # Master dataset storage
@@ -155,64 +156,41 @@ class StreamClass (threading.Thread):
             prefix = os.path.join(StreamClass.streamDir, datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
             rdd.saveAsTextFile(prefix)
 
-    # Updates la RT view 1 with the results of the logic() function on every RDD from the DStream
+    # Updates the RT view 1 with the results of the logic() function on every RDD from the DStream
     @staticmethod
     def saveRTView1(rdd):
         #Collects the results from the rdd into an array of tuples.
         #As we had to create a string from the product name and type to sum products, now we have to divide both features
         results= rdd.map(lambda z: Utils.productStringAsTuple(z)).collect()
+        StreamClass.saveRTView(results,'ProductCount_rt1')
 
+    # Updates the RT view 2 with the results of the logic() function on every RDD from the DStream
+    @staticmethod
+    def saveRTView2(rdd):
+        # Collects the results from the rdd into an array of tuples.
+        # As we had to create a string from the product name and type to sum products, now we have to divide both features
+        results = rdd.map(lambda z: Utils.productStringAsTuple(z)).collect()
+        StreamClass.saveRTView(results, 'ProductCount_rt2')
+
+    @staticmethod
+    def saveRTView(results, table):
         conn = StreamClass.dbConnection()
         c = conn.cursor()
-        c.execute('''CREATE TABLE IF NOT EXISTS ProductCount_rt1 (name, type, count)''')
+        c.execute('CREATE TABLE IF NOT EXISTS ' + table + ' (name, type, count)')
         for r in results:
             #Check if the product (name, type) already exists within rt_view
-            c.execute('SELECT * FROM ProductCount_rt1 WHERE name =? AND type =?',tuple(r[0:2]))
+            c.execute("SELECT * FROM " + table + " WHERE name = '"+r[0]+"' AND type = '"+r[1]+"'")
             data = c.fetchall()
             found = len (data) > 0
             if not found:
-                c.execute('INSERT INTO ProductCount_rt1 VALUES (?,?,?)',r)
+                #(name, type,count)
+                c.execute("INSERT INTO " + table + " VALUES ('"+r[0]+"','"+r[1]+"',"+r[2]+")")
                 # print "New row at ProductCount_rt1 "+ str(r)
             else:
                 row = data[0]
-                #Creation od the record to update the DB. The query shows it is: (count, name, type)
-                update=[]
-                update.append(int(row[2]) + int(r[2]))
-                update.append(row[0])
-                update.append(row[1])
-                c.execute('UPDATE ProductCount_rt1 SET count =? WHERE name=? AND type =?', update)
+                #Creation od the record to update the DB.
+                c.execute("UPDATE " + table + " SET count = " + str(int(row[2]) + int(r[2])) + " WHERE name = '"+ str(row[0]) + "' AND type = '" + str(row[1])+"'")
                 # print "Updating row at ProductCount_rt1 "+ str(update)
-
-        conn.commit()
-        conn.close()
-
-    #
-    # Actualiza la RT view con los resultados de los datos en streaming en cada RDD del DStream
-    #
-    @staticmethod
-    def saveRTView2(rdd):
-
-        results= rdd.collect()
-        conn = StreamClass.dbConnection()
-        c = conn.cursor()
-        c.execute('''CREATE TABLE IF NOT EXISTS wordcount_rt2 (word, count)''')
-        for r in results:
-            #comprobar si ya existe ese ID en la rt_view
-            id= [r[0]]
-            c.execute('SELECT * FROM wordcount_rt2 WHERE word =?',id)
-            data = c.fetchall()
-            existe = len (data) > 0
-
-            if not existe:
-                c.execute('INSERT INTO wordcount_rt2 VALUES (?,?)',r)
-                print "Creando fila en wordcount_rt2 "+ str(r)
-            else:
-                row= data[0]
-                update=[]
-                update.append(row[0])
-                update.append (row[1]+r[1])
-                c.execute('UPDATE wordcount_rt2 SET count =? WHERE word=?', update)
-                print "Actualizando fila en wordcount_rt2 "+ str(update)
 
         conn.commit()
         conn.close()
