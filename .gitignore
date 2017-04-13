@@ -1,3 +1,5 @@
 .idea/
 checkpoint/
 hdfs/
+db/
+*.pyc
