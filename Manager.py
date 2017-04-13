@@ -12,7 +12,7 @@ from pyspark import SparkContext
 import time
 import sqlite3
 
-from batch import BatchClass
+from Batch import BatchClass
 from Stream import StreamClass
 
 HDFS_LOCATION = 'hdfs'
@@ -25,17 +25,24 @@ BROKERS = '192.168.1.111:9092'
 
 if __name__ == "__main__":
     streamDir = os.path.join(HDFS_LOCATION, STREAM_DATA_STORAGE_DIR)
-    # streamDir= '/home/ruben/PycharmProjects/LambdaArchitecture/hdfs/new/'
-    # masterDir='/home/ruben/PycharmProjects/LambdaArchitecture/hdfs/master/'
+    masterDir = os.path.join(HDFS_LOCATION, BATCH_DATA_INGESTION_DIR)
     # db ='/home/ruben/PycharmProjects/LambdaArchitecture/views.db'
     #
     sc = SparkContext(appName="LambdaLMG")
     #
-    # batch =  BatchClass(masterDir, streamDir,db, sc)
-    stream = StreamClass(sc, streamDir, DB_LOCATION, TOPIC, BROKERS, WINDOW_LENGTH)
+    batchF = 1
+    streamF = 0
+
+    if batchF != 0:
+        batch = BatchClass(sc, masterDir, streamDir, DB_LOCATION)
+        batch.start()
+
+    if streamF != 0:
+        stream = StreamClass(sc, streamDir, DB_LOCATION, TOPIC, BROKERS, WINDOW_LENGTH)
+        stream.start()
     #
-    # batch.start()
-    stream.start()
+    #batch.start()
+    #stream.start()
     #
     # while True:
     #     if not batch.is_alive():

@@ -77,12 +77,12 @@ class StreamClass (threading.Thread):
 
         #Second flow, not taken into account until 2nd loop
         self.stream2 = StreamClass.logic(self.json_objects)
-        self.stream2.pprint()
+        #self.stream2.pprint()
         self.stream2.foreachRDD(self.saveRTView2)
 
 
         # Master dataset storage
-        #toHDFS.foreachRDD(self.saveStream)
+        toHDFS.foreachRDD(self.saveStream)
 
         self.ssc.start()
         self.ssc.awaitTermination()
@@ -183,7 +183,7 @@ class StreamClass (threading.Thread):
             data = c.fetchall()
             found = len (data) > 0
             if not found:
-                #(name, type,count)
+                #Insertion order: (name, type,count)
                 c.execute("INSERT INTO " + table + " VALUES ('"+r[0]+"','"+r[1]+"',"+r[2]+")")
                 # print "New row at ProductCount_rt1 "+ str(r)
             else:
