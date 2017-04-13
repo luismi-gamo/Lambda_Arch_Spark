@@ -102,51 +102,33 @@ class StreamClass (threading.Thread):
             .transform(lambda x: x.sortBy(lambda (k, v): -v))
         return productCount
 
-    #Contador total de disegnos
-    # @staticmethod
-    # def logic(stream):
-    #     designs = stream.map(lambda x: x['design'][0])
-    #     designCount = designs.map(lambda x: (Utils.designsAsStrings(x), 1)) \
-    #         .reduceByKey(lambda a, b: a + b) \
-    #         .transform(lambda x: x.sortBy(lambda (k, v): -v))
-    #     return designCount
-
-    def active_view(self):
-        if self.active==1:
-            return "worcount_rt1"
-        else:
-            return "worcount_rt2"
-
+    #Signals the end of the batch process, and RTViews must be changed
     def batchFinish(self):
-        print "Se notifica a la speed layer que Batch finish"
-        print "counts1: " +str(self.countS1)
-        print "counts2: " +str(self.countS2)
 
         self.countS1 = self.countS1 +1
-        if self.countS1 ==2:
-            self.active=2
-            self.removeRTView(1)
-            self.countS1=0
+        if self.countS1 == 2:
+            self.active = 2
+            self.removeRTView('ProductCount_rt1')
+            self.countS1 = 0
 
-        if self.countS2==-1:
+        if self.countS2 == -1:
             print "Arranca flujo2"
-            self.removeRTView(2)
-
-
+            self.removeRTView('ProductCount_rt2')
 
         self.countS2 = self.countS2 +1
-        if self.countS2 ==2:
-            self.active=1
-            self.removeRTView(2)
-            self.countS2=0
+        if self.countS2 == 2:
+            self.active = 1
+            self.removeRTView('ProductCount_rt2')
+            self.countS2 = 0
 
 
-
-    def removeRTView(self, i):
+    #Removes content from a table
+    def removeRTView(self, table):
         conn = sqlite3.connect(self.db)
         c = conn.cursor()
-        table='wordcount_rt'+str(i)
-        c.execute("DELETE FROM '%s' " %table)
+        c.execute("DELETE FROM '"+table+"' ")
+        conn.commit()
+        conn.close()
 
 
     #Saves new data into a temporal dir so batch layer can process it at the next iteration

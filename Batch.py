@@ -4,6 +4,7 @@ import json
 import sqlite3
 import threading
 import Utils
+import time
 
 from pyspark import SparkContext
 
@@ -50,12 +51,16 @@ class BatchClass (threading.Thread):
         batch = self.sc.textFile(self.masterDir)
         self.json_objects = batch.map(json.loads)
 
-        # Total de disegnos
+        #Historic data of products
         products = self.logic(self.json_objects)
         print products.take(3)
 
-        #guardar en BView
+        #Save BatchView to DB
         self.saveBView(products)
+
+        #Waits 20 seconds because as there are not a big amount of files the batch process is very fast
+        time.sleep(20)
+
         print "Exiting " + self.name
 
     def saveBView(self, rdd):
@@ -69,7 +74,6 @@ class BatchClass (threading.Thread):
         c.execute("DELETE FROM ProductCount_bv")
         for r in results:
             c.execute('INSERT INTO ProductCount_bv VALUES (?,?,?)', r)
-           # print "Insertando fila en wordcount_b "+ str(r)
         conn.commit()
         conn.close()
 

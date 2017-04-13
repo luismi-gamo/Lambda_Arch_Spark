@@ -31,7 +31,7 @@ if __name__ == "__main__":
     sc = SparkContext(appName="LambdaLMG")
     #
     batchF = 1
-    streamF = 0
+    streamF = 1
 
     if batchF != 0:
         batch = BatchClass(sc, masterDir, streamDir, DB_LOCATION)
@@ -40,15 +40,13 @@ if __name__ == "__main__":
     if streamF != 0:
         stream = StreamClass(sc, streamDir, DB_LOCATION, TOPIC, BROKERS, WINDOW_LENGTH)
         stream.start()
-    #
-    #batch.start()
-    #stream.start()
-    #
-    # while True:
-    #     if not batch.is_alive():
-    #         stream.batchFinish()
-    #         batch =  BatchClass(masterDir, streamDir,db, sc)
-    #         batch.start()
+
+    if streamF != 0 and batchF != 0:
+        while True:
+            if not batch.is_alive():
+                stream.batchFinish()
+                batch = BatchClass(sc, masterDir, streamDir, DB_LOCATION)
+                batch.start()
 
 
 #input data, JSON formatted
