@@ -69,8 +69,7 @@ class BatchClass (threading.Thread):
         results= rdd.map(lambda z: Utils.productStringAsTuple(z)).collect()
         conn = sqlite3.connect(self.db)
         c = conn.cursor()
-
-        c.execute('''CREATE TABLE IF NOT EXISTS ProductCount_bv (name, type, count)''')
+        c.execute('''CREATE TABLE IF NOT EXISTS ProductCount_bv  (name CHAR(200), type CHAR(50), count INT)''')
         c.execute("DELETE FROM ProductCount_bv")
         for r in results:
             c.execute('INSERT INTO ProductCount_bv VALUES (?,?,?)', r)

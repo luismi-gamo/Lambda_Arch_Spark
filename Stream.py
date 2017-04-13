@@ -68,8 +68,6 @@ class StreamClass (threading.Thread):
         # into string representation
         toHDFS = self.json_objects.map(lambda z: json.dumps(z))
 
-
-
         #New data to be processed through the speed layer
         self.stream = StreamClass.logic(self.json_objects)
         self.stream.pprint()
@@ -158,7 +156,7 @@ class StreamClass (threading.Thread):
     def saveRTView(results, table):
         conn = StreamClass.dbConnection()
         c = conn.cursor()
-        c.execute('CREATE TABLE IF NOT EXISTS ' + table + ' (name, type, count)')
+        c.execute('CREATE TABLE IF NOT EXISTS ' + table + ' (name CHAR(200), type CHAR(50), count INT)')
         for r in results:
             #Check if the product (name, type) already exists within rt_view
             c.execute("SELECT * FROM " + table + " WHERE name = '"+r[0]+"' AND type = '"+r[1]+"'")
@@ -166,7 +164,7 @@ class StreamClass (threading.Thread):
             found = len (data) > 0
             if not found:
                 #Insertion order: (name, type,count)
-                c.execute("INSERT INTO " + table + " VALUES ('"+r[0]+"','"+r[1]+"',"+r[2]+")")
+                c.execute("INSERT INTO " + table + " VALUES ('"+r[0]+"','"+r[1]+"',"+str(r[2])+")")
                 # print "New row at ProductCount_rt1 "+ str(r)
             else:
                 row = data[0]

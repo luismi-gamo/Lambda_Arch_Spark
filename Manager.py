@@ -26,10 +26,9 @@ BROKERS = '192.168.1.111:9092'
 if __name__ == "__main__":
     streamDir = os.path.join(HDFS_LOCATION, STREAM_DATA_STORAGE_DIR)
     masterDir = os.path.join(HDFS_LOCATION, BATCH_DATA_INGESTION_DIR)
-    # db ='/home/ruben/PycharmProjects/LambdaArchitecture/views.db'
-    #
+
     sc = SparkContext(appName="LambdaLMG")
-    #
+
     batchF = 1
     streamF = 1
 

@@ -13,4 +13,4 @@ def productStringAsTuple(product):
     resStr = product[0]
     count = product[1]
     result = resStr.split('_')
-    return (result[0], result[1], str(count))
+    return (result[0], result[1], count)
