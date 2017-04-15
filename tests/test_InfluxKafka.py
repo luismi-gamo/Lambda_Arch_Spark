@@ -1,10 +1,9 @@
 import requests
-import random
 from kafka import KafkaConsumer
 import json
 import datetime
 import time
-import calendar
+import PricesDBManager
 
 INFLUX_DB_LOCATION = 'http://localhost:8086/write?db=mydb'
 #Manages Influx DB operations
@@ -15,6 +14,9 @@ INFLUX_DB_LOCATION = 'http://localhost:8086/write?db=mydb'
 #   "design":[{"name":"FreeStyle","type":"D"}],
 #   "lab":[{"name":"Greiche&Scaff","country":"Canada"}]}
 
+#Data to POST to Influx:
+#influx_kafka,product_name="FreeStyle",product_type="F",laboratory_name="Greiche&Scaff",laboratory_country="Canada" price_euro=4.0,value=1 1492270326564999936
+
 def getInfluxDataFromProductDictionary(dict, series):
     #Este que trae del json data creator no vale, esta fuera de rango ???
     timestamp = dict['timestamp']
@@ -24,9 +26,10 @@ def getInfluxDataFromProductDictionary(dict, series):
     prod_type = 'product_type="' + dict['design'][0]['type']+'"'
     lab_name = 'laboratory_name="' + dict['lab'][0]['name']+'"'
     lab_country = 'laboratory_country="' + dict['lab'][0]['country']+'"'
-    data = series + ','+prod_name+','+prod_type+ ','+lab_name+','+lab_country + ' value=1 ' + str(int(timestamp * 1e6))
+    price_euro = 'price_euro=' + str(PricesDBManager.findPriceForLabAndProduct(dict['lab'][0]['name'], dict['design'][0]['name'], priceslist))
+    isredo = 'redo=' + str(PricesDBManager.isRedo(dict['lab'][0]['name']))
+    data = series + ','+prod_name+','+prod_type+ ','+lab_name+','+lab_country +','+isredo + ' ' + price_euro +',value=1 ' + str(int(timestamp * 1e6))
     return data
-
 
 def postNewPoint(theurl, theseries, thedata):
     # POST some form-encoded data:
@@ -41,12 +44,18 @@ def postNewPoint(theurl, theseries, thedata):
 
 SERIES = 'influx_kafka'
 PRICES_DB_LOCATION = '../db/Prices.db'
+TABLE = 'Click_Fees_Lab'
+priceslist = None
 
 if __name__ == "__main__":
     # To consume latest messages and auto-commit offsets
     consumer = KafkaConsumer('LensJobs',
                          group_id='LensJobsGID',
                          bootstrap_servers=['192.168.1.111:9092'])
+
+    #Obtains the prices of products from SQLITE3 database
+    priceslist = PricesDBManager.loadPricesTable(PRICES_DB_LOCATION, TABLE)
+
     #print datetime.datetime.fromtimestamp(1492184973393)
     for message in consumer:
         postNewPoint(INFLUX_DB_LOCATION, SERIES, json.loads(message.value))

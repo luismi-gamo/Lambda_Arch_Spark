@@ -1,5 +1,5 @@
 import sqlite3
-
+import random
 
 def dropPricesTable(db, table):
     conn = sqlite3.connect(db)
@@ -53,6 +53,7 @@ def viewPricesTable(db, table):
     conn.commit()
     conn.close()
 
+#Loads the DB table into a list of dictionaries
 def loadPricesTable(db, table):
     pricesList = list()
     conn = sqlite3.connect(db)
@@ -67,12 +68,25 @@ def loadPricesTable(db, table):
     conn.close()
     return pricesList
 
+#Returns the price as float
 def findPriceForLabAndProduct(lab, prod, prodlist):
     for p in prodlist:
         if (p['laboratory'] == lab and p['product'] == prod):
             return p['price_euro']
 
     return 0.0
+
+#defines a probability of being a redo function of the laboratory
+def isRedo(lab):
+    if lab == 'Visionlab':
+        return int(random.randint(0,200) == 0)
+    elif lab == 'VSP':
+        return int(random.randint(0, 40) == 0)
+    elif lab == 'Visionworks':
+        return int(random.randint(0, 4) == 0)
+    else:
+        return int(random.randint(0, 15) == 0)
+
 
 DB_LOCATION = '../db/Prices.db'
 TABLE = 'Click_Fees_Lab'
