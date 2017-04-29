@@ -2,5 +2,4 @@
 checkpoint/
 hdfs/
 db/
-grafana/
 *.pyc
