@@ -1,0 +1,16 @@
+{
+"eventFrequency": 400,
+"varyEventFrequency": true,
+"repeatWorkflow": true,
+"timeBetweenRepeat": 1500,
+"varyRepeatFrequency": true,
+"steps": [{
+	"config": [{
+		"timestamp": "nowTimestamp()",
+		"lab_id": "random('VSP', 'Visionworks', 'Braslab', 'LOA','Montroyal', 'SpecSavers', 'Visionlab', 'Szajna', 'Duarte','Vitolen')"
+		}
+	],
+	"duration": 0
+	}]
+}
+

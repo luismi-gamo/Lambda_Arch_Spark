@@ -3,5 +3,4 @@ checkpoint/
 hdfs/
 db/
 grafana/
-json_data_sources/
 *.pyc

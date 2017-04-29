@@ -5,6 +5,10 @@ import datetime
 import time
 import PricesDBManager
 
+###########################
+### WORKS WITH json-data-generator running LensSimConfig.json
+###########################
+
 INFLUX_DB_LOCATION = 'http://localhost:8086/write?db=mydb'
 #Manages Influx DB operations
 # Format of the data passed to the Influx new point function
