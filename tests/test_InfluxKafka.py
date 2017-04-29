@@ -25,9 +25,13 @@ def getInfluxDataFromProductDictionary(dict, series):
     prod_name = 'product_name="' + dict['design'][0]['name']+'"'
     prod_type = 'product_type="' + dict['design'][0]['type']+'"'
     lab_name = 'laboratory_name="' + dict['lab'][0]['name']+'"'
-    lab_country = 'laboratory_country="' + dict['lab'][0]['country']+'"'
+    #Takes no '' because of grafana world map plugin that needs the country code to be unquoted
+    lab_country = 'laboratory_country=' + dict['lab'][0]['country']
+    #Creates a fake price depending on the lab
     price_euro = 'price_euro=' + str(PricesDBManager.findPriceForLabAndProduct(dict['lab'][0]['name'], dict['design'][0]['name'], priceslist))
+    #Marks random redo's
     isredo = 'redo=' + str(PricesDBManager.isRedo(dict['lab'][0]['name']))
+    #Total data to be posted
     data = series + ','+prod_name+','+prod_type+ ','+lab_name+','+lab_country +','+isredo + ' ' + price_euro +',value=1 ' + str(int(timestamp * 1e6))
     return data
 
