@@ -3,6 +3,7 @@ from kafka import KafkaConsumer
 from kafka import KafkaProducer
 import json
 import requests
+import Definitions
 
 #output data, JSON formatted
 #[ {"timestamp":"2017-03-03T16:59:01.771Z",
@@ -21,26 +22,29 @@ def generateJSONJob(inputmessage):
     timestamp = inputmessage['timestamp']
     labid = inputmessage['lab_id']
     prescription = dict()
-    prescription['prescription'] = generatePrescription()
+    (prescription['prescription'], prescription['index']) = generatePrescriptionAndIndex()
     prescription['timestamp'] = timestamp
     prescription['lab_id'] = labid
     return prescription
 
-def generatePrescription():
+def generatePrescriptionAndIndex():
     decimal = [0.0, 0.25, 0.5, 0.75]
     sph = generateDioptres() + decimal[random.randint(0,3)]
-    cyl = generateDioptres() + decimal[random.randint(0,3)]
+    cyl = -abs(generateDioptres()) + decimal[random.randint(0,3)]
     add = generateAddition() + decimal[random.randint(0,3)]
 
     axisvalues =  range(0, 90, 5)
     axis = axisvalues[random.randint(0,len(axisvalues)-1)]
+
+    index = generateIndex(max(abs(sph), abs(sph + cyl)))
 
     prescription = dict()
     prescription['sph'] = sph
     prescription['cyl'] = cyl
     prescription['axis'] = axis
     prescription['add'] = add
-    return prescription
+
+    return (prescription, index)
 
 def generateDioptres():
     number = random.randint(0,100)
@@ -87,6 +91,19 @@ def generateAddition():
         sph = 3
     return sph
 
+def generateIndex(max_power):
+    #number = random.randint(0, 3)
+    index = '1.5'
+    if max_power > 1 and max_power <= 2.5:
+        index = '1.53'
+    elif max_power <= 4.5:
+        index = '1.6'
+    elif max_power <= 8:
+        index = '1.67'
+    else:
+        index = '1.74'
+
+    return index
 
 def generateWebJob(inputmessage, series):
     # InfluxDB works with nanosecond timestamps. Python uses miliseconds
@@ -97,15 +114,12 @@ def generateWebJob(inputmessage, series):
     return data
 
 
-INFLUX_DB_LOCATION = 'http://localhost:8086/write?db=production_data_db'
-SERIES = 'total_production'
-
 if __name__ == "__main__":
-    servers = ['192.168.1.111:9092']
+    servers = Definitions.KAFKA_BROKERS
     # To consume latest messages and auto-commit offsets
     #reads raw data coming from the server
-    consumer = KafkaConsumer('job_raw_data',
-                             group_id='LensJobsGID',
+    consumer = KafkaConsumer(Definitions.RAW_TOPIC,
+                             group_id=Definitions.GROUP_ID,
                              bootstrap_servers=servers)
     # To produce JSON messages for the streaming layer
     producer = KafkaProducer(bootstrap_servers=servers)
@@ -113,10 +127,10 @@ if __name__ == "__main__":
     for message in consumer:
         #ETL -> JSON and sends the message back to kafka
         json_job = generateJSONJob(json.loads(message.value))
-        producer.send("job_json_data", json.dumps(json_job))
+        producer.send(Definitions.JSON_TOPIC, json.dumps(json_job))
         #ETL -> InfluxDB
-        web_job = generateWebJob(json.loads(message.value), SERIES)
-        post_response = requests.post(INFLUX_DB_LOCATION, web_job)
+        web_job = generateWebJob(json.loads(message.value), Definitions.SERIES)
+        post_response = requests.post(Definitions.INFLUX_DB_LOCATION, web_job)
 
         print json_job
         print web_job

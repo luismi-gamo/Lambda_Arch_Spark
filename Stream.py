@@ -62,23 +62,23 @@ class StreamClass (threading.Thread):
         # kafka emits tuples: json data comes at the second position of the tuple
         # Besides, the data is formatted into JSON
         self.json_objects = kvs.map(lambda z: json.loads(z[1])).cache()
-        #self.json_objects.pprint()
+        self.json_objects.pprint()
 
         #As data is going to be stored as plain text, JSON must be formatted
         # into string representation
         toHDFS = self.json_objects.map(lambda z: json.dumps(z))
 
-        #New data to be processed through the speed layer
-        self.stream = StreamClass.logic(self.json_objects)
-        self.stream.pprint()
-        self.stream.foreachRDD(self.saveRTView1)
-
-        #Second flow, not taken into account until 2nd loop
-        self.stream2 = StreamClass.logic(self.json_objects)
-        #self.stream2.pprint()
-        self.stream2.foreachRDD(self.saveRTView2)
-
-
+        # #New data to be processed through the speed layer
+        # self.stream = StreamClass.logic(self.json_objects)
+        # self.stream.pprint()
+        # self.stream.foreachRDD(self.saveRTView1)
+        #
+        # #Second flow, not taken into account until 2nd loop
+        # self.stream2 = StreamClass.logic(self.json_objects)
+        # #self.stream2.pprint()
+        # self.stream2.foreachRDD(self.saveRTView2)
+        #
+        #
         # Master dataset storage
         toHDFS.foreachRDD(self.saveStream)
 

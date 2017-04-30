@@ -14,37 +14,35 @@ import sqlite3
 
 from Batch import BatchClass
 from Stream import StreamClass
+import Definitions
 
-HDFS_LOCATION = 'hdfs'
-STREAM_DATA_STORAGE_DIR = 'new'
-BATCH_DATA_INGESTION_DIR = 'master'
-DB_LOCATION = 'db/LensesDB.db'
-WINDOW_LENGTH = 10
-TOPIC = 'LensJobs'
-BROKERS = '192.168.1.111:9092'
 
 if __name__ == "__main__":
-    streamDir = os.path.join(HDFS_LOCATION, STREAM_DATA_STORAGE_DIR)
-    masterDir = os.path.join(HDFS_LOCATION, BATCH_DATA_INGESTION_DIR)
+    streamDir = os.path.join(Definitions.HDFS_LOCATION, Definitions.STREAM_DATA_STORAGE_DIR)
+    masterDir = os.path.join(Definitions.HDFS_LOCATION, Definitions.BATCH_DATA_INGESTION_DIR)
 
     sc = SparkContext(appName="LambdaLMG")
 
-    batchF = 1
+    batchF = 0
     streamF = 1
 
     if batchF != 0:
-        batch = BatchClass(sc, masterDir, streamDir, DB_LOCATION)
+        batch = BatchClass(sc, masterDir, streamDir, Definitions.DB_LOCATION)
         batch.start()
 
     if streamF != 0:
-        stream = StreamClass(sc, streamDir, DB_LOCATION, TOPIC, BROKERS, WINDOW_LENGTH)
+        stream = StreamClass(sc, streamDir,
+                             Definitions.RT_B_VIEWS_DB_LOCATION,
+                             Definitions.JSON_TOPIC,
+                             Definitions.KAFKA_BROKERS,
+                             Definitions.STREAMING_WINDOW_LENGTH)
         stream.start()
 
     if streamF != 0 and batchF != 0:
         while True:
             if not batch.is_alive():
                 stream.batchFinish()
-                batch = BatchClass(sc, masterDir, streamDir, DB_LOCATION)
+                batch = BatchClass(sc, masterDir, streamDir, Definitions.RT_B_VIEWS_DB_LOCATION)
                 batch.start()
 
 
