@@ -1,7 +1,8 @@
 #HDFS
 HDFS_LOCATION = 'hdfs://localhost:9000/lambda/hdfs'
 STREAM_DATA_STORAGE_DIR = 'new'
-BATCH_DATA_INGESTION_DIR = 'master'
+#Reads all directories with files
+BATCH_DATA_INGESTION_DIR = 'master/*/*'
 
 #Batch & Streaming Views
 RT_B_VIEWS_DB_LOCATION = 'db/LensesDB.db'

@@ -23,11 +23,11 @@ if __name__ == "__main__":
 
     sc = SparkContext(appName="LambdaLMG")
 
-    batchF = 0
-    streamF = 1
+    batchF = 1
+    streamF = 0
 
     if batchF != 0:
-        batch = BatchClass(sc, masterDir, streamDir, Definitions.DB_LOCATION)
+        batch = BatchClass(sc, masterDir, streamDir, Definitions.RT_B_VIEWS_DB_LOCATION)
         batch.start()
 
     if streamF != 0:
