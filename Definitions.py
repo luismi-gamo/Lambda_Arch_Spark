@@ -1,5 +1,5 @@
 #HDFS
-HDFS_LOCATION = 'hdfs'
+HDFS_LOCATION = 'hdfs://localhost:9000/lambda/hdfs'
 STREAM_DATA_STORAGE_DIR = 'new'
 BATCH_DATA_INGESTION_DIR = 'master'
 

@@ -1,0 +1,7 @@
+{"index": "1.6", "lab_id": "Montroyal", "prescription": {"sph": 1.25, "add": 3.25, "axis": 75, "cyl": -5.0}, "timestamp": 1493583837384}
+{"index": "1.67", "lab_id": "Visionworks", "prescription": {"sph": 7.25, "add": 1.75, "axis": 30, "cyl": -2.25}, "timestamp": 1493583838509}
+{"index": "1.6", "lab_id": "Visionworks", "prescription": {"sph": -3.0, "add": 2.25, "axis": 40, "cyl": -1.25}, "timestamp": 1493583839776}
+{"index": "1.67", "lab_id": "Visionlab", "prescription": {"sph": -5.75, "add": 2.5, "axis": 65, "cyl": -1.75}, "timestamp": 1493583840932}
+{"index": "1.74", "lab_id": "VSP", "prescription": {"sph": 8.25, "add": 3.25, "axis": 35, "cyl": -3.75}, "timestamp": 1493583842474}
+{"index": "1.67", "lab_id": "LOA", "prescription": {"sph": 5.0, "add": 0.5, "axis": 75, "cyl": -4.25}, "timestamp": 1493583844186}
+{"index": "1.67", "lab_id": "VSP", "prescription": {"sph": 6.75, "add": 1.0, "axis": 0, "cyl": -7.0}, "timestamp": 1493583845932}

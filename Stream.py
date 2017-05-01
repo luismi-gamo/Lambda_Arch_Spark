@@ -69,15 +69,14 @@ class StreamClass (threading.Thread):
         toHDFS = self.json_objects.map(lambda z: json.dumps(z))
 
         # #New data to be processed through the speed layer
-        # self.stream = StreamClass.logic(self.json_objects)
-        # self.stream.pprint()
-        # self.stream.foreachRDD(self.saveRTView1)
+        self.stream = StreamClass.logic(self.json_objects)
+        #self.stream.pprint()
+        self.stream.foreachRDD(self.saveRTView1)
         #
-        # #Second flow, not taken into account until 2nd loop
-        # self.stream2 = StreamClass.logic(self.json_objects)
-        # #self.stream2.pprint()
-        # self.stream2.foreachRDD(self.saveRTView2)
-        #
+        #Second flow, not taken into account until 2nd loop
+        self.stream2 = StreamClass.logic(self.json_objects)
+        #self.stream2.pprint()
+        self.stream2.foreachRDD(self.saveRTView2)
         #
         # Master dataset storage
         toHDFS.foreachRDD(self.saveStream)
@@ -91,14 +90,22 @@ class StreamClass (threading.Thread):
     #TODO
 
 
-    # Speed layer logic: returns the total amount of each product along the window interval (sorted DESC)
+    # Speed layer logic: returns the total amount of each index along the window interval (sorted DESC)
     @staticmethod
     def logic(stream):
-        products = stream.map(lambda x: x['design'][0])
-        productCount = products.map(lambda x: (Utils.productAsString(x), 1))\
+        byindex = stream.map(lambda x: ((x['index'],x['lab_id']),1))\
             .reduceByKey(lambda a, b: a + b)\
             .transform(lambda x: x.sortBy(lambda (k, v): -v))
-        return productCount
+        return byindex
+
+    # Speed layer logic: returns the total amount of each product along the window interval (sorted DESC)
+    # @staticmethod
+    # def logicForProducts(stream):
+    #     products = stream.map(lambda x: x['design'][0])
+    #     productCount = products.map(lambda x: (Utils.productAsString(x), 1))\
+    #         .reduceByKey(lambda a, b: a + b)\
+    #         .transform(lambda x: x.sortBy(lambda (k, v): -v))
+    #     return productCount
 
     #Signals the end of the batch process, and RTViews must be changed
     def batchFinish(self):
@@ -139,27 +146,27 @@ class StreamClass (threading.Thread):
     # Updates the RT view 1 with the results of the logic() function on every RDD from the DStream
     @staticmethod
     def saveRTView1(rdd):
-        #Collects the results from the rdd into an array of tuples.
-        #As we had to create a string from the product name and type to sum products, now we have to divide both features
-        results= rdd.map(lambda z: Utils.productStringAsTuple(z)).collect()
-        StreamClass.saveRTView(results,'ProductCount_rt1')
+        #Collects the results from the rdd into an array of tuples with format:
+        #(index,lab,count)
+        results = rdd.map(lambda z: (z[0][0], z[0][1], z[1])).collect()
+        StreamClass.saveRTView(results,'IndexCount_rt1')
 
     # Updates the RT view 2 with the results of the logic() function on every RDD from the DStream
     @staticmethod
     def saveRTView2(rdd):
-        # Collects the results from the rdd into an array of tuples.
-        # As we had to create a string from the product name and type to sum products, now we have to divide both features
-        results = rdd.map(lambda z: Utils.productStringAsTuple(z)).collect()
-        StreamClass.saveRTView(results, 'ProductCount_rt2')
+        # Collects the results from the rdd into an array of tuples with format:
+        # (index,lab,count)
+        results = rdd.map(lambda z: (z[0][0], z[0][1], z[1])).collect()
+        StreamClass.saveRTView(results, 'IndexCount_rt2')
 
     @staticmethod
     def saveRTView(results, table):
         conn = StreamClass.dbConnection()
         c = conn.cursor()
-        c.execute('CREATE TABLE IF NOT EXISTS ' + table + ' (name CHAR(200), type CHAR(50), count INT)')
+        c.execute('CREATE TABLE IF NOT EXISTS ' + table + ' (n_index CHAR(10), lab CHAR(50), count INT)')
         for r in results:
             #Check if the product (name, type) already exists within rt_view
-            c.execute("SELECT * FROM " + table + " WHERE name = '"+r[0]+"' AND type = '"+r[1]+"'")
+            c.execute("SELECT * FROM " + table + " WHERE n_index = '"+r[0]+"' AND lab = '"+r[1]+"'")
             data = c.fetchall()
             found = len (data) > 0
             if not found:
@@ -169,7 +176,8 @@ class StreamClass (threading.Thread):
             else:
                 row = data[0]
                 #Creation od the record to update the DB.
-                c.execute("UPDATE " + table + " SET count = " + str(int(row[2]) + int(r[2])) + " WHERE name = '"+ str(row[0]) + "' AND type = '" + str(row[1])+"'")
+                c.execute("UPDATE " + table + " SET count = " + str(int(row[2]) + int(r[2])) + " WHERE n_index = '"+
+                          str(row[0]) + "' AND lab = '" + str(row[1])+"'")
                 # print "Updating row at ProductCount_rt1 "+ str(update)
 
         conn.commit()
