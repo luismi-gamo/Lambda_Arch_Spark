@@ -1,9 +1,9 @@
 from kafka import KafkaConsumer
-
+import Definitions
 # To consume latest messages and auto-commit offsets
-consumer = KafkaConsumer('LaboratoryJobs',
+consumer = KafkaConsumer(Definitions.RAW_TOPIC,
                          group_id='LensJobsGID',
-                         bootstrap_servers=['192.168.1.111:9092'])
+                         bootstrap_servers=[Definitions.KAFKA_BROKERS])
 # consumer = KafkaConsumer('LensJobs',
 #                         group_id='LensJobsGID',
 #                         bootstrap_servers=['192.168.1.111:9092'])
