@@ -18,13 +18,13 @@ import Definitions
 
 
 if __name__ == "__main__":
-    streamDir = os.path.join(Definitions.HDFS_LOCATION, Definitions.STREAM_DATA_STORAGE_DIR)
+    streamDir = os.path.join(Definitions.LOCAL_FS_LOCATION, Definitions.STREAM_DATA_STORAGE_DIR)
     masterDir = os.path.join(Definitions.HDFS_LOCATION, Definitions.BATCH_DATA_INGESTION_DIR)
 
     sc = SparkContext(appName="LambdaLMG")
 
     batchF = 1
-    streamF = 0
+    streamF = 1
 
     if batchF != 0:
         batch = BatchClass(sc, masterDir, streamDir, Definitions.RT_B_VIEWS_DB_LOCATION)

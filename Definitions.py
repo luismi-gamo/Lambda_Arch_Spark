@@ -1,8 +1,9 @@
 #HDFS
 HDFS_LOCATION = 'hdfs://localhost:9000/lambda/hdfs'
+LOCAL_FS_LOCATION = './hdfs'
 STREAM_DATA_STORAGE_DIR = 'new'
 #Reads all directories with files
-BATCH_DATA_INGESTION_DIR = 'master/*/*'
+BATCH_DATA_INGESTION_DIR = 'master'
 
 #Batch & Streaming Views
 RT_B_VIEWS_DB_LOCATION = 'db/LensesDB.db'
@@ -19,3 +20,11 @@ KAFKA_BROKERS = '192.168.1.116:9092'
 #InfluxDB
 INFLUX_DB_LOCATION = 'http://localhost:8086/write?db=production_data_db'
 SERIES = 'total_production'
+
+
+# Gets the maximum power of both meridian in absolute value
+def getMaxPowerMeridian(prescription):
+    sph = prescription['sph']
+    cyl = prescription['cyl']
+    max_power = max(abs(sph), abs(sph + cyl))
+    return max_power
