@@ -30,7 +30,7 @@ def generateJSONJob(inputmessage):
 def generatePrescriptionAndIndex():
     decimal = [0.0, 0.25, 0.5, 0.75]
     sph = generateDioptres() + decimal[random.randint(0,3)]
-    cyl = -abs(generateDioptres()) + decimal[random.randint(0,3)]
+    cyl = -abs(generateDioptres() + decimal[random.randint(0,3)])
     add = generateAddition() + decimal[random.randint(0,3)]
 
     axisvalues =  range(0, 90, 5)
@@ -100,7 +100,7 @@ def generateIndex(max_power):
         index = '1.6'
     elif max_power <= 8:
         index = '1.67'
-    else:
+    elif max_power > 8:
         index = '1.74'
 
     return index
