@@ -2,4 +2,5 @@
 checkpoint/
 hdfs/
 db/
+tests/Regression_Models/
 *.pyc
