@@ -24,9 +24,9 @@ if __name__ == "__main__":
 
     sc = SparkContext(appName="LambdaLMG")
 
-    batchF = 0
-    streamF = 0
-    queryF = 0
+    batchF = 1
+    streamF = 1
+    queryF = 1
 
     if queryF != 0:
         consulta = QueryClass(Definitions.RT_B_VIEWS_DB_LOCATION, Definitions.STREAMING_WINDOW_LENGTH)
@@ -37,7 +37,7 @@ if __name__ == "__main__":
         #http://stackoverflow.com/questions/16249736/how-to-import-data-from-mongodb-to-pandas
 
     if batchF != 0:
-        batch = BatchClass(sc, masterDir, streamDir, Definitions.RT_B_VIEWS_DB_LOCATION)
+        batch = BatchClass(sc, masterDir, streamDir, Definitions.RT_B_VIEWS_DB_LOCATION, Definitions.MONGO_LOCATION)
         batch.start()
 
 
@@ -46,7 +46,8 @@ if __name__ == "__main__":
                              Definitions.RT_B_VIEWS_DB_LOCATION,
                              Definitions.JSON_TOPIC,
                              Definitions.KAFKA_BROKERS,
-                             Definitions.STREAMING_WINDOW_LENGTH)
+                             Definitions.STREAMING_WINDOW_LENGTH,
+                             Definitions.MONGO_LOCATION)
         stream.start()
 
     if streamF != 0 and batchF != 0:

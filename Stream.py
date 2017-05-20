@@ -7,7 +7,7 @@ import Utils
 from pyspark import SparkContext
 from pyspark.streaming import StreamingContext
 from pyspark.streaming.kafka import KafkaUtils
-
+from pymongo import MongoClient
 
 import threading
 
@@ -15,6 +15,7 @@ class StreamClass (threading.Thread):
 
     # Singleton for DB connections
     bd = None
+    mongodb = None
     # Singleton for HDFS
     streamDir = None
 
@@ -22,7 +23,11 @@ class StreamClass (threading.Thread):
     def dbConnection():
         return sqlite3.connect(StreamClass.bd)
 
-    def __init__(self, sc, streamDir, db, topic, brokers, windowlen):
+    @staticmethod
+    def mongodbConnection():
+        return MongoClient(StreamClass.mongodb)
+
+    def __init__(self, sc, streamDir, db, topic, brokers, windowlen, mongodb):
         threading.Thread.__init__(self)
         self.name = "Stream"
         #Sets the streaming data storage directory
@@ -34,6 +39,11 @@ class StreamClass (threading.Thread):
         self.db = db
         if StreamClass.bd is None:
             StreamClass.bd = db
+
+        self.mongodb = mongodb
+        if StreamClass.bd is None:
+            StreamClass.mongodb = mongodb
+
         #sets Kafka parameters
         self.topic = topic
         self.brokers = brokers
@@ -56,7 +66,7 @@ class StreamClass (threading.Thread):
         self.ssc= StreamingContext(sc, windowlen)
 
     def run(self):
-        print "Starting " + self.name
+        print "Starting " + self.name + " listening to " + str(self.topic) + ' on ' + self.brokers
         self.ssc.checkpoint("checkpoint")
         #Kafka connection
         kvs = KafkaUtils.createDirectStream(self.ssc, [self.topic], {"metadata.broker.list": self.brokers})
@@ -140,6 +150,9 @@ class StreamClass (threading.Thread):
         conn.commit()
         conn.close()
 
+        mongoconn = StreamClass.mongodbConnection()
+        db = mongoconn.lambdaDB
+        db.getColllection(table).drop()
 
     #Saves new data into a temporal dir so batch layer can process it at the next iteration
     @staticmethod
@@ -225,3 +238,20 @@ class StreamClass (threading.Thread):
                 # print "Updating row at PowerCount_rt1 "+ str(update)
         conn.commit()
         conn.close()
+
+        mongoconn = StreamClass.mongodbConnection()
+        db = mongoconn.lambdaDB
+        for record in results:
+            #Updates the document if exists, or inserts the document if not exists
+            updatereg = db[table].update_one(
+                {
+                    "meridian": record[0],
+                    "index": record[1],
+                    "lab" : record[2],
+                }, {
+                    '$inc': {'count': record[3]}
+                },
+                upsert=True
+            )
+
+

@@ -13,14 +13,15 @@ from pymongo import MongoClient
 
 class BatchClass (threading.Thread):
 
-    def __init__(self, sc, masterDir, streamDir, db):
+    def __init__(self, sc, masterDir, streamDir, db, mongodb):
         threading.Thread.__init__(self)
         self.name = "Batch"
         self.streamDir = streamDir
         self.masterDir = masterDir
-        self.db =db
+        self.db = db
         self.sc= sc
         self.json_objects = None
+        self.mongodb = mongodb
 
     def run(self):
         print "Starting " + self.name
@@ -99,7 +100,7 @@ class BatchClass (threading.Thread):
         # Collects the results from the rdd into an array of tuples with format:
         # ((meridian, index,lab),count) -> (meridian, index,lab,count)
         results = rdd.map(lambda z: (z[0][0], z[0][1], z[0][2], z[1])).collect()
-        client = MongoClient('mongodb://localhost:27017/')
+        client = MongoClient(self.mongodb)
         db = client.lambdaDB
         #drops the database before inserting the updated values
         db.PowerCount_bv.drop()

@@ -15,12 +15,14 @@ STREAMING_WINDOW_LENGTH = 10
 RAW_TOPIC = 'job_raw_data'
 JSON_TOPIC = 'job_json_data'
 #KAFKA_BROKERS = ['192.168.1.111:9092']
-KAFKA_BROKERS = '192.168.1.116:9092'
+KAFKA_BROKERS = '192.168.1.109:9092'
 
 #InfluxDB
 INFLUX_DB_LOCATION = 'http://localhost:8086/write?db=production_data_db'
 SERIES = 'total_production'
 
+#MongoDB
+MONGO_LOCATION = 'mongodb://localhost:27017/'
 
 # Gets the maximum power of both meridian in absolute value
 def getMaxPowerMeridian(prescription):
