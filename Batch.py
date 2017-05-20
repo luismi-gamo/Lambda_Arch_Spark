@@ -8,6 +8,7 @@ import os
 import Definitions
 import time
 from pyspark import SparkContext
+from pymongo import MongoClient
 
 
 class BatchClass (threading.Thread):
@@ -54,16 +55,16 @@ class BatchClass (threading.Thread):
         self.json_objects = batch.map(json.loads)
         #print self.json_objects.take(5)
         #Historic data of products
-        indexes = self.indexLogic(self.json_objects)
-        print indexes.take(5)
+        # indexes = self.indexLogic(self.json_objects)
+        # print indexes.take(5)
         powers = self.powerLogic(self.json_objects)
         print powers.take(5)
         #Save BatchViews to DB
-        self.saveIndexesBView(indexes)
+        # self.saveIndexesBView(indexes)
         self.savePowersBView(powers)
-
+        self.savePowersBViewMongo(powers)
         #Waits 20 seconds because as there are not a big amount of files the batch process is very fast
-        time.sleep(20)
+        #time.sleep(20)
 
         print "Exiting " + self.name
 
@@ -93,6 +94,25 @@ class BatchClass (threading.Thread):
             c.execute('INSERT INTO PowerCount_bv VALUES (?,?,?,?)', r)
         conn.commit()
         conn.close()
+
+    def savePowersBViewMongo(self, rdd):
+        # Collects the results from the rdd into an array of tuples with format:
+        # ((meridian, index,lab),count) -> (meridian, index,lab,count)
+        results = rdd.map(lambda z: (z[0][0], z[0][1], z[0][2], z[1])).collect()
+        client = MongoClient('mongodb://localhost:27017/')
+        db = client.lambdaDB
+        #drops the database before inserting the updated values
+        db.PowerCount_bv.drop()
+        for record in results:
+            saved_word = db.PowerCount_bv.insert_one(
+                {
+                    "meridian": record[0],
+                    "index": record[1],
+                    "lab" : record[2],
+                    "count": record[3]
+                }
+            )
+
 
     # Batch layer logic for index distribution by lab: returns the total amount of each index for each lab
     #The tuple format for reducing is: ((u'1.67', u'Vitolen'), 44)
