@@ -152,7 +152,7 @@ class StreamClass (threading.Thread):
 
         mongoconn = StreamClass.mongodbConnection()
         db = mongoconn.lambdaDB
-        db.getColllection(table).drop()
+        db[table].drop()
 
     #Saves new data into a temporal dir so batch layer can process it at the next iteration
     @staticmethod

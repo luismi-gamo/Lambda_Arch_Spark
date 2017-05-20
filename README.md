@@ -17,3 +17,11 @@ simulacion _JobsSimConfig.json_ y el de workflow _JobsWorkflow.json_
 Esto lanza las señales de entrada al sistema, pero han de ser procesadas por ___JobETL.py___
 antes de poder ser tratadas por la capa de streaming.
 
+
+# Visualizar en Superset
+
+Arrancar el servicio
+> superset runserver -p 9999
+
+Conectarse con el navegador a http://localhost:9999/
+

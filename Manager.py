@@ -29,12 +29,13 @@ if __name__ == "__main__":
     queryF = 1
 
     if queryF != 0:
-        consulta = QueryClass(Definitions.RT_B_VIEWS_DB_LOCATION, Definitions.STREAMING_WINDOW_LENGTH)
+        consulta = QueryClass(Definitions.RT_B_VIEWS_DB_LOCATION,
+                              Definitions.MONGO_LOCATION,
+                              Definitions.STREAMING_WINDOW_LENGTH)
         consulta.start()
         # while True:
         #     time.sleep(10)
         #     consulta.changeTable()
-        #http://stackoverflow.com/questions/16249736/how-to-import-data-from-mongodb-to-pandas
 
     if batchF != 0:
         batch = BatchClass(sc, masterDir, streamDir, Definitions.RT_B_VIEWS_DB_LOCATION, Definitions.MONGO_LOCATION)

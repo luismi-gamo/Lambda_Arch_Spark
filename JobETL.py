@@ -93,8 +93,10 @@ def generateAddition():
 
 def generateIndex(max_power):
     #number = random.randint(0, 3)
-    index = '1.5'
-    if max_power > 1 and max_power <= 2.5:
+    index = '0'
+    if max_power <= 1:
+        index = '1.5'
+    elif max_power <= 2.5:
         index = '1.53'
     elif max_power <= 4.5:
         index = '1.6'
