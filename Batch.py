@@ -65,7 +65,7 @@ class BatchClass (threading.Thread):
         self.savePowersBView(powers)
         self.savePowersBViewMongo(powers)
         #Waits 20 seconds because as there are not a big amount of files the batch process is very fast
-        #time.sleep(20)
+        time.sleep(60)
 
         print "Exiting " + self.name
 

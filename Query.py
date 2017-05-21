@@ -34,8 +34,11 @@ class QueryClass(threading.Thread):
             if bview.size != 0 and rtview.size != 0:
                 total_df = bview.merge(rtview, on=['meridian', 'lab', 'index'], how='left').fillna(0)
                 total_df['count'] = total_df['count_x'] + total_df['count_y']
-                total_df.to_sql("PowerCount_Total", QueryClass.dbConnection(), if_exists = 'replace')
-                print "wrote PowerCount_Total = PowerCount_bv + PowerCount_rt" + str(self.active)
+                #print total_df
+                total_df.to_sql("PowerCount_Total", QueryClass.dbConnection(), if_exists = 'replace', index = False)
+                print "\nwrote PowerCount_Total = PowerCount_bv + PowerCount_rt" + str(self.active)
+            else:
+                print "\nQuery: No data available"
             time.sleep(self.sleeptime)
 
 
@@ -63,7 +66,8 @@ class QueryClass(threading.Thread):
         df = pd.DataFrame(list(cursor))
         # Delete the _id
         if df.size != 0:
-            df.drop('_id', 1)
+            del df['_id']
+        #print df
         return df
         #return pd.read_sql_query("SELECT * from PowerCount_bv", conn)
 
@@ -78,7 +82,8 @@ class QueryClass(threading.Thread):
         df = pd.DataFrame(list(cursor))
         # Delete the _id field
         if df.size != 0:
-            df.drop('_id', 1)
+            del df['_id']
+        #print df
         return df
         # query = "SELECT * from PowerCount_rt" + str(activeTable)
         # return pd.read_sql_query(query, conn)

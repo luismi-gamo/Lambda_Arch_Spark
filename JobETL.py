@@ -133,6 +133,6 @@ if __name__ == "__main__":
         #ETL -> InfluxDB
         web_job = generateWebJob(json.loads(message.value), Definitions.SERIES)
         post_response = requests.post(Definitions.INFLUX_DB_LOCATION, web_job)
-
+        print post_response
         print json_job
         print web_job

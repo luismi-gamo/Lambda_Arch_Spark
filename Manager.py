@@ -31,7 +31,7 @@ if __name__ == "__main__":
     if queryF != 0:
         consulta = QueryClass(Definitions.RT_B_VIEWS_DB_LOCATION,
                               Definitions.MONGO_LOCATION,
-                              Definitions.STREAMING_WINDOW_LENGTH)
+                              10)
         consulta.start()
         # while True:
         #     time.sleep(10)
@@ -55,8 +55,9 @@ if __name__ == "__main__":
         while True:
             if not batch.is_alive():
                 stream.batchFinish()
-                consulta.changeTable()
-                batch = BatchClass(sc, masterDir, streamDir, Definitions.RT_B_VIEWS_DB_LOCATION)
+                if queryF != 0:
+                    consulta.changeTable()
+                batch = BatchClass(sc, masterDir, streamDir, Definitions.RT_B_VIEWS_DB_LOCATION, Definitions.MONGO_LOCATION)
                 batch.start()
 
 
