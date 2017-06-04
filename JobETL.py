@@ -111,8 +111,9 @@ def generateWebJob(inputmessage, series):
     # InfluxDB works with nanosecond timestamps. Python uses miliseconds
     timestamp = str(int(inputmessage['timestamp'] * 1e6))
     lab_id = 'lab_id="' + inputmessage['lab_id'] + '"'
+    index = 'index="' + inputmessage['index'] + '"'
     #Total data to be posted: the timestamp and the lab
-    data = series + ',' + lab_id + ' value=1 ' + timestamp
+    data = series + ',' + lab_id + ','+ index +' value=1 ' + timestamp
     return data
 
 
@@ -131,8 +132,8 @@ if __name__ == "__main__":
         json_job = generateJSONJob(json.loads(message.value))
         producer.send(Definitions.JSON_TOPIC, json.dumps(json_job))
         #ETL -> InfluxDB
-        web_job = generateWebJob(json.loads(message.value), Definitions.SERIES)
+        web_job = generateWebJob(json_job, Definitions.SERIES)
         post_response = requests.post(Definitions.INFLUX_DB_LOCATION, web_job)
-        print post_response
+        print Definitions.INFLUX_DB_LOCATION + '\n'+ str(post_response.reason)
         print json_job
         print web_job

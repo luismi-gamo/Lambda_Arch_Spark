@@ -1,8 +1,12 @@
-# Lambda_Arch_Spark
-Este es el codigo fuente de mi proyecto de master de Big Data.
+# Arquitectura Lambda en PySpark
+Se han establecido como objetivos dos casos de uso típicos del mundo del Big Data:
+* Poner en marcha un sistema de monitorización en tiempo real de la producción de lentes de una empresa.
+* Poner en marcha un sistema de análisis de datos hibrido (batch + streaming) mediante una arquitectura lambda.
 
-# Requisitos
-Arrancar procesos:
+Ademas se desarrollará una capa de visualización, para facilitar el acceso al estudio de los datos.
+
+# Requisitos para la puesta en marcha del sistema
+Instalar y/o arrancar los siguientes servicios:
 * MongoDB
 > sudo service mongod start
 
@@ -22,32 +26,43 @@ Arrancar procesos:
 
 # Señal de entrada
 ## Simulacion de entrada
-La simulacion usa la aplicacion ___json-data-generator___ para generar
-un con el fichero de
-simulacion _JobsSimConfig.json_ y el de workflow _JobsWorkflow.json_
+Los datos llegan al sistema a través de un topic de Kafka, denominado ‘job_raw_data’, alimentado por la aplicacion ***json-data-generator***.
+
+Este programa envia a Kafka un mensaje JSON con los datos del trabajo, y utiliza como ficheros de configuración:
+* Configuración de la señal: _JobsSimConfig.json_
+* Contenido del mensaje: _JobsWorkflow.json_
+
+Para ejecutar la simulación:
 > java -jar json-data-generator-1.2.1.jar JobsSimConfig.json
 
-Esto lanza las señales de entrada al sistema, pero han de ser procesadas por ___JobETL.py___
-antes de poder ser tratadas por la capa de streaming.
+## Ingesta de datos
+El proceso iniciado lanza las señales de entrada al sistema, pero han de ser procesadas por ___JobETL.py___ antes de poder ser tratadas por la capa de streaming.
+
+Para lanzar el proceso encargado de la ETL:
 > /usr/bin/python2.7 $LAMBDA_DIR/JobETL.py
 
-# Puesta en marcha
+___JobETL.py___  leerá continuamente mensajes del topic de entrada y los procesará de dos maneras diferentes, dependiendo del tipo de uso que se le dará a los datos:
+* Generará una cadena con los datos formateados adecuadamente para ser enviados a InfluxDB mediante una petición HTTP. Estos serán los datos usados en la monitorización de la producción de los laboratorios.
+* Generará un objeto JSON que pueda ser analizado adecuadamente en los procesos batch y streaming de la arquitectura lambda. Este objeto será depositado en otro topic de Kafka, denominado ‘job_json_data’.
+
+
+# Arquitectura lambda
 Para poner en marcha la arquitectura lambda hay que ejecutar el comando:
 > spark-submit --jars /opt/spark-1.6.2-bin-hadoop2.6/lib/spark-streaming-kafka-assembly_2.10-1.6.2.jar Manager.py
 
 
 # Visualizacion
 
-## Superset
+## Distribución de índices de refracción en función de la potencia
 
-Arrancar el servicio
+Arrancar el servicio __Superset__
 > superset runserver -p 9999
 
-Conectarse con el navegador a http://localhost:9999/
+Conectarse con el navegador -> http://localhost:9999/
 
-## Grafana
-Arrancar el servicio
+## Monitorización en tiempo real de la producción
+Arrancar el servicio __Grafana__
 > sudo service grafana-server start
 
-Conectarse con el navegador a http://localhost:3000
+Conectarse con el navegador -> http://localhost:3000
 
