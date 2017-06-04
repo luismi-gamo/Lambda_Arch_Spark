@@ -7,26 +7,29 @@ Ademas se desarrollará una capa de visualización, para facilitar el acceso al 
 
 # Requisitos para la puesta en marcha del sistema
 Instalar y/o arrancar los siguientes servicios:
-* MongoDB
+* MongoDB [Instalar en Ubuntu](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/)
 > sudo service mongod start
 
-* HDFS
+* HDFS [Instalar en Ubuntu](https://www.digitalocean.com/community/tutorials/how-to-install-hadoop-in-stand-alone-mode-on-ubuntu-16-04)
 > start-dfs.sh
 
-* Zookeeper
+* Zookeeper [Instalar Zookeeper y Kafka en Ubuntu](https://devops.profitbricks.com/tutorials/install-and-configure-apache-kafka-on-ubuntu-1604-1/)
 > bin/zookeeper-server-start.sh config/zookeeper.properties
 
 * Kafka
 >  bin/kafka-server-start.sh config/server.properties
 
-* InfluxDB
+* InfluxDB [Instalar](https://docs.influxdata.com/influxdb/v1.2/introduction/installation/)
 > sudo service influxd start
 > GUI -> http://localhost:8083
 
+* Spark 1.6 o superior [Instalar en Ubuntu](http://www.informit.com/articles/article.aspx?p=2755929&seqNum=3)
+
+* Python 2.7
 
 # Señal de entrada
 ## Simulacion de entrada
-Los datos llegan al sistema a través de un topic de Kafka, denominado ‘job_raw_data’, alimentado por la aplicacion ***json-data-generator***.
+Los datos llegan al sistema a través de un topic de Kafka, denominado ‘job_raw_data’, alimentado por la aplicacion [***json-data-generator***.](https://github.com/acesinc/json-data-generator/releases)
 
 Este programa envia a Kafka un mensaje JSON con los datos del trabajo, y utiliza como ficheros de configuración:
 * Configuración de la señal: _JobsSimConfig.json_
@@ -55,13 +58,13 @@ Para poner en marcha la arquitectura lambda hay que ejecutar el comando:
 
 ## Distribución de índices de refracción en función de la potencia
 
-Arrancar el servicio __Superset__
+Arrancar el servicio __Superset__ [Instalar](http://airbnb.io/superset/installation.html#)
 > superset runserver -p 9999
 
 Conectarse con el navegador -> http://localhost:9999/
 
 ## Monitorización en tiempo real de la producción
-Arrancar el servicio __Grafana__
+Arrancar el servicio __Grafana__ [Instalar en Debian](http://docs.grafana.org/installation/debian/)
 > sudo service grafana-server start
 
 Conectarse con el navegador -> http://localhost:3000
