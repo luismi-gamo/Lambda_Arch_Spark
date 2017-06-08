@@ -6,6 +6,8 @@ Se han establecido como objetivos dos casos de uso típicos del mundo del Big Da
 
 Ademas se desarrollará una capa de visualización, para facilitar el acceso al estudio de los datos.
 
+En este [enlace](https://www.dropbox.com/s/r8lelw8vo6aa6ds/PresentacionPFM.pdf?dl=0) se puede descargar la presentacion defendida ante el tribunal del Master.
+
 # Requisitos para la puesta en marcha del sistema
 Instalar y/o arrancar los siguientes servicios:
 
@@ -91,8 +93,29 @@ Para el presente estudio, dicho objeto contendrá datos sobre las prescripciones
 Para poner en marcha la arquitectura lambda hay que ejecutar el comando:
 > spark-submit --jars /opt/spark-1.6.2-bin-hadoop2.6/lib/spark-streaming-kafka-assembly_2.10-1.6.2.jar Manager.py
 
+## Datos de salida
+Como salida, la arquitectura lambda produce 3 tablas (colecciones) de MongoDB:  
 
-#Monitorizacion de la producción
+* Una tabla de la vista de _batch_
+* Dos tablas para las vistas generadas por el proceso _streaming_.
+
+Las tres tablas comparten esquema, ya que para la obtencion de la salida final de la arquitectura lambda han de mezclarse la tabla de _batch_ con una de las tablas de _stremaing_. 
+
+Como este proyecto está interesado en obtener la distribucion de potencia de las lentes en funcion del indice de refraccion, el esquema usado es:
+
+* _meridian_: meridiano de maxima potencia de la lente -> max(sph,cyl)  
+* _index_: indice de refraccion
+* _lab_: id del laboratorio
+* _count_: numero de lentes
+
+> {"meridian": 5.75,  
+> "index": '1.56',  
+> "lab" : 'thelaboratoryid',   
+> 'count': 145  
+> }
+
+
+# Monitorizacion de la producción
 Para hacer posible la monitorización de la producción de lentes mediante el uso de InfluxDB hay que traducir los datos al formato de entrada adecuado. Dicho formato está descrito en el API HTTP de InfluxDB. 
 
 En nuestro caso, como queremos monitorizar el número total de lentes de cada laboratorio, la información que es necesario incluir en el mensaje es: 
@@ -109,7 +132,7 @@ La peticion sería algo del tipo:
 
 # Visualizacion
 
-## Distribución de índices de refracción en función de la potencia
+## Distribución de índices de refracción en función de la potencia de la lente
 
 Arrancar el servicio __Superset__ [Instalar](http://airbnb.io/superset/installation.html#)
 > superset runserver -p 9999
@@ -121,4 +144,5 @@ Arrancar el servicio __Grafana__ [Instalar en Debian](http://docs.grafana.org/in
 > sudo service grafana-server start
 
 Conectarse con el navegador -> http://localhost:3000
+
 
